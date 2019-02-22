@@ -119,23 +119,123 @@ function alterProfile() {
     fi
 }
 
+function logFailedStep() {
+    echo "Step $currentStep FAILED"
+    exit 1
+}
+
+
+environmentSetup=false
+runInstallBosh=false
+runDeployCf=false
+postSetup=false
+currentStep=""
+
+function setAllStepsTrue() {
+    environmentSetup=true
+    runInstallBosh=true
+    runDeployCf=true
+    postSetup=true
+}
+
 function setupLinuxOnWsl() {
 
     cd
-    setupLinks
-    installPrograms
-    set -e
-    cloneRepo
-    installBosh
-    deployCf
-    createSettingsFile
-    set +e
-    alterProfile
+    trap 'logFailedStep' ERR EXIT
+    
+    if [ "$environmentSetup" = true ]; then
+        currentStep="-e Environment Setup"
+        setupLinks
+        installPrograms
+        cloneRepo
+    fi
+
+    if [ "$runInstallBosh" = true ]; then
+        currentStep="-b Install Bosh"
+        installBosh
+    fi
+
+    if [ "$runDeployCf" = true ]; then
+        currentStep="-c Deploy Cloud Foundary"
+        deployCf
+    fi
+
+    if [ "$postSetup" = true ]; then
+        currentStep="-p Post setup"
+        createSettingsFile
+        alterProfile
+    fi
+
 }
 
 
 #### 
 
+function help() {
+    echo "-h | --help Print this help menu"
+    echo "-a | --all Runs full script including environment setup, BOSH installation, cloudFoundary
+    deployment, and post setup tasks"
+    echo "-e | --environment Sets up pre environment before BOSH installation"
+    echo "-b | --installBosh Runs BOSH installation"
+    echo "-c | --deployCf Deploys cloudFoundary"
+    echo "-p | --postSetup Runs post setup tasks"
+}
+
+function parseArgs() {
+# Parse Command line arguments and determine which functions to run
+
+    if [ $# -eq 0 ]; then
+        setAllStepsTrue
+    fi
+
+    POSITIONAL=()
+    while [[ $# -gt 0 ]]
+        do
+            key="$1"
+            case $key in
+            -a|--all)
+            setAllStepsTrue
+            shift
+            ;;
+            -e|--environment)
+            environmentSetup=true
+            shift
+            ;;
+            -b|--installBosh)
+            runInstallBosh=true
+            shift
+            ;;
+            -c|--deployCf)
+            runDeployCf=true
+            shift
+            ;;
+            -p|--postSetup)
+            postSetup=true
+            shift
+            ;;
+            -h|--help)
+            help
+            exit 0
+            shift
+            ;;
+
+            --default)
+            help
+            exit 0
+            shift
+            ;;
+            *)
+            help
+            exit 0
+            POSITIONAL+=("$1")
+            shift
+            ;;
+        esac
+    done
+    set -- "${POSITIONAL[@]}"
+}
+
+parseArgs
 setupLinuxOnWsl | tee $SETUP_LOG_FILE
 
 echo "Setup log file: $SETUP_LOG_FILE"
