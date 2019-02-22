@@ -172,23 +172,24 @@ function setupLinuxOnWsl() {
 #### 
 
 function help() {
-    echo "-h | --help Print this help menu"
+    echo "-h | --help Print this help menu."
     echo "-a | --all Runs full script including environment setup, BOSH installation, cloudFoundary
-    deployment, and post setup tasks"
-    echo "-e | --environment Sets up pre environment before BOSH installation"
-    echo "-b | --installBosh Runs BOSH installation"
-    echo "-c | --deployCf Deploys cloudFoundary"
-    echo "-p | --postSetup Runs post setup tasks"
+    deployment, and post setup tasks."
+    echo "-e | --environment Sets up pre environment before BOSH installation."
+    echo "-b | --installBosh Runs BOSH installation."
+    echo "-c | --deployCf Deploys cloudFoundary."
+    echo "-p | --postSetup Runs post setup tasks."
 }
 
 function parseArgs() {
 # Parse Command line arguments and determine which functions to run
 
-    if [ $# -eq 0 ]; then
+    POSITIONAL=()
+    if [ "$#" -eq 0 ]; then
         setAllStepsTrue
+        return
     fi
 
-    POSITIONAL=()
     while [[ $# -gt 0 ]]
         do
             key="$1"
@@ -235,7 +236,7 @@ function parseArgs() {
     set -- "${POSITIONAL[@]}"
 }
 
-parseArgs
+parseArgs "$@"
 setupLinuxOnWsl | tee $SETUP_LOG_FILE
 
 echo "Setup log file: $SETUP_LOG_FILE"

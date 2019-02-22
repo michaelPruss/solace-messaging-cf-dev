@@ -157,6 +157,19 @@ solace-messaging-cf-dev/bin/setup_linux_on_wsl.sh
 
 With this option, the script **will not** switch to the git branch specified by the BRANCH environment variable.
 
+If the above script fails, you can rerun individual steps by rerunning the script with additional
+arguments.
+
+~~~
+-h | --help Print this help menu deployment, and post setup tasks.
+-a | --all Runs full script including environment setup, BOSH installation, cloudFoundary
+deployment, and post setup tasks.
+-e | --environment Sets up pre environment before BOSH installation.
+-b | --installBosh Runs BOSH installation.
+-c | --deployCf Deploys cloudFoundary.
+-p | --postSetup Runs post setup tasks.              
+~~~
+
 Once that is complete then you can deploy Solace as per [these instructions](#solace-pubsub-deployment). Note that it is not necessary to use the cli-tools vagrant virtual machine - the commands should work fine running under WSL.
 
 <a name="installation-on-linux"></a>
